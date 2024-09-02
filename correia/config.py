@@ -1,7 +1,7 @@
+import configparser
 import cv2 as cv
 import numpy as np
 from dataclasses import dataclass
-import configparser
 
 class Default:
     font = cv.FONT_HERSHEY_SIMPLEX
@@ -34,9 +34,9 @@ class Config:
         self.multiplier = float(self.config['DEFAULT']['multiplier'])
 
     def save(self):
-        self.config['DEFAULT']['tolerance'] = str(self.tolerance)
+        self.config['DEFAULT']['tolerance'] = str(self.tolerance).replace('.0', '')
         self.config['DEFAULT']['image_interval'] = str(self.image_interval)
-        self.config['DEFAULT']['threshold'] = str(self.threshold)
+        self.config['DEFAULT']['threshold'] = str(self.threshold).replace('.0', '')
         self.config['DEFAULT']['multiplier'] = str(self.multiplier)
         with open('config.ini', 'w') as configfile:
             self.config.write(configfile)

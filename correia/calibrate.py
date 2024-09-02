@@ -1,7 +1,6 @@
 import cv2 as cv
 import numpy as np
-from config import Config, Default
-from utils import Utils, FixedSizeList
+from .utils import Utils, FixedSizeList
 
 def multiplier_trackbar_callback(value):
     global multiplier

@@ -1,11 +1,9 @@
+import os
 import cv2 as cv
 import numpy as np
-from utils import Utils, FixedSizeList
-from time import time
+from time import time, sleep
 from dataclasses import dataclass
-from config import Config, Default
-from calibrate import Calibrate
-import os
+from correia import Calibrate, Utils, FixedSizeList, Config, Default
 
 def main():
     cap = cv.VideoCapture(0)
@@ -33,7 +31,8 @@ def main():
                   OPCOES                                                      
                      1. Calibrar Threshold                                    
                      2. Calibrar Multiplicador                                
-                     3. Teste    
+                     3. Teste 
+                     4. Leitura    
                      4. Editar Intervalo p/ Processamento
                      5. Editar Tolerância para Atuador                                             
                      q. Sair                                                  
@@ -51,8 +50,15 @@ def main():
             try:
                 test(cap, original_polygon, config.threshold, config.multiplier, config.image_interval, config.tolerance)
             except UnboundLocalError:
-                print('Calibre o multiplicador com a opção 2 antes!')
+                print('Calibre a câmera com a opção 2 antes!')
+                sleep(5)
         elif user_input[0] == '4':
+            try:
+                test(cap, original_polygon, config.threshold, config.multiplier, config.image_interval, config.tolerance, False)
+            except UnboundLocalError:
+                print('Calibre a câmera com a opção 2 antes!')
+                sleep(5)
+        elif user_input[0] == '5':
             try:
                 interval = float(input('Insira o novo Intervalo (s): '))
                 if interval < 0:
@@ -61,7 +67,7 @@ def main():
                     config.image_interval = interval
             except Exception:
                 print('Insira um float!')
-        elif user_input[0] == '5':
+        elif user_input[0] == '6':
             try:
                 tolerance = float(input('Insira a nova Tolerância: '))
                 if tolerance < 0:
@@ -84,7 +90,8 @@ def test(
         threshold: int = 127, 
         multiplier: float = 0.001, 
         image_interval: float = 1, 
-        tolerance: int = 10
+        tolerance: int = 10,
+        show_image: bool = True
     ):
     ret, frame = cap.read()
     black_image = np.zeros_like(frame, dtype="uint8")
@@ -128,15 +135,20 @@ def test(
             live_polygon = Utils.get_object_polygon_contour(image_median, multiplier)
             live_moment = cv.moments(live_polygon)
             live_x_centroid = int(live_moment['m10']/live_moment['m00'])
-            cv.drawContours(frame, [live_polygon], -1, Default.red, 2)
-            cv.line(frame, (live_x_centroid, int(height/2)), (original_x_centroid, int(height/2)), Default.blue, 2)
             live_filled_polygon = black_image.copy()
             cv.fillPoly(live_filled_polygon, [live_polygon], color=Default.white)
             displaced_area = np.sum(live_filled_polygon[:, :, 0] & original_filled_polygon[:, :, 0])
             displaced_area_series.append(displaced_area)
+            if show_image:
+                cv.drawContours(frame, [live_polygon], -1, Default.red, 2)
+                cv.line(frame, (live_x_centroid, int(height/2)), (original_x_centroid, int(height/2)), Default.blue, 2)
         except Exception as e:
             print('Nenhum contorno. Verificar', e)
 
+        # Compute displaced area
+        median_displaced_area = displaced_area_series.get_median()
+        percentage_displaced_area = np.round(((original_polygon_area - median_displaced_area)/original_polygon_area) * 100, 2)
+        
         # Get correct side
         centroid_difference = original_x_centroid - live_x_centroid
         if centroid_difference > tolerance:
@@ -144,22 +156,21 @@ def test(
         elif centroid_difference < -tolerance: 
             actor_response = 'Direita'
         else:
-            actor_response = ' '
+            actor_response = 'Alinhado'
 
         # Frame writing
-        frame = Utils.write_on_frame(frame, str(np.round(centroid_difference, 2)))
-        frame = Utils.write_on_frame(frame, actor_response, position=(50, 250))
-        median_displaced_area = displaced_area_series.get_median()
-        percentage_displaced_area = np.round(((original_polygon_area - median_displaced_area)/original_polygon_area) * 100, 2)
-        frame = Utils.write_on_frame(frame, f"{percentage_displaced_area}%", position=(50, 150))
-        cv.drawContours(frame, [original_polygon], -1, Default.green, 2)
+        if show_image:
+            frame = Utils.write_on_frame(frame, str(np.round(centroid_difference, 2)))
+            frame = Utils.write_on_frame(frame, actor_response, position=(50, 250))
+            frame = Utils.write_on_frame(frame, f"{percentage_displaced_area}%", position=(50, 150))
+            cv.drawContours(frame, [original_polygon], -1, Default.green, 2)
+            cv.imshow('frame', frame)
+        else:
+            print(f"Deslocamento de {percentage_displaced_area}%. O objeto está {abs(centroid_difference)} pixels a {actor_response}", end='\r')
 
-        cv.imshow('frame', frame)
-
-        if cv.waitKey(1) == ord('q'):
+        if show_image and cv.waitKey(1) == ord(' '):
             main_loop = False
 
-    cap.release()
     cv.destroyAllWindows()
 
 if __name__ == '__main__':

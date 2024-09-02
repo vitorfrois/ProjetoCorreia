@@ -1,6 +1,6 @@
 import cv2 as cv
 import numpy as np
-from config import Config, Default
+from .config import Default
 
 class Utils:
     def get_object_polygon_contour(image: np.array, multiplier: float = 0.01) -> list:
