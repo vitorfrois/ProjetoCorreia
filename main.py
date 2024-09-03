@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os
 import cv2 as cv
 import numpy as np
@@ -33,8 +35,8 @@ def main():
                      2. Calibrar Multiplicador                                
                      3. Teste 
                      4. Leitura    
-                     4. Editar Intervalo p/ Processamento
-                     5. Editar Tolerância para Atuador                                             
+                     5. Editar Intervalo p/ Processamento
+                     6. Editar Tolerância para Atuador                                             
                      q. Sair                                                  
                 ===============================================================
             """
