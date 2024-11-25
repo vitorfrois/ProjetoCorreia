@@ -45,9 +45,9 @@ def main():
         if len(user_input) == 0:
             pass
         elif user_input[0] == '1':
-            config.threshold = Calibrate.get_threshold(cap)
+            config.threshold = Calibrate.get_threshold(cap, config.image_interval)
         elif user_input[0] == '2':
-            original_polygon, config.multiplier = Calibrate.get_multiplier(cap, config.threshold)
+            original_polygon, config.multiplier = Calibrate.get_multiplier(cap, config.threshold, config.image_interval)
         elif user_input[0] == '3':
             try:
                 test(cap, original_polygon, config.threshold, config.multiplier, config.image_interval, config.tolerance)

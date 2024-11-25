@@ -1,5 +1,6 @@
 import cv2 as cv
 import numpy as np
+import time
 from .utils import Utils, FixedSizeList
 
 def multiplier_trackbar_callback(value):
@@ -13,7 +14,10 @@ def threshold_trackbar_callback(value):
     print(threshold)
 
 class Calibrate:
-    def get_threshold(cap: cv.VideoCapture) -> int:
+    start_time: float
+
+    def get_threshold(cap: cv.VideoCapture, image_interval: float = 1) -> int:
+        start_time = time.time()
         calibrating = True
 
         cv.namedWindow('frame')
@@ -21,10 +25,11 @@ class Calibrate:
         
         while calibrating:
             ret, frame = cap.read()
-            if not ret:
+            if not ret and time.time() - start_time > (image_interval * 2):
                 print("Can't receive frame (stream end?). Exiting ...")
                 break
 
+            start_time = time.time()            
             imgray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
             _, thresh = cv.threshold(imgray, threshold, 100, cv.THRESH_BINARY)
 
@@ -38,7 +43,8 @@ class Calibrate:
         cv.destroyWindow('frame')
         return threshold
 
-    def get_multiplier(cap: cv.VideoCapture, threshold: int) -> np.array:
+    def get_multiplier(cap: cv.VideoCapture, threshold: int, image_interval: float = 1) -> np.array:
+        start_time = time.time()
         calibrating = True
 
         width = cap.get(cv.CAP_PROP_FRAME_WIDTH)
@@ -52,10 +58,12 @@ class Calibrate:
 
         while calibrating:
             ret, frame = cap.read()
-            if not ret:
+            if not ret and time.time() - start_time > (image_interval * 2):
                 print("Can't receive frame (stream end?). Exiting ...")
                 break
             
+            start_time = time.time()
+
             processed_image = Utils.process_image(frame, threshold)
             image_series.append(processed_image)
             image_median = image_series.get_median({'axis': 0}).astype("uint8")
