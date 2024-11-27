@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from correia import Calibrate, Utils, FixedSizeList, Config, Default
 
 def main():
-    cap = cv.VideoCapture(0)
+    cap = cv.VideoCapture(-1, cv.CAP_V4L)
     if not cap.isOpened():
         print("Cannot open camera")
         exit()

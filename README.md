@@ -13,7 +13,7 @@ O programa deve ser utilizado via terminal.
 Abra um terminal e no diretório principal do programa, digite:
 ``` bash
 chmod +x ./install.sh 
-chmod +x ./program.sh 
+chmod +x ./programa.sh 
 ./install.sh python venv
 ```
 
@@ -28,3 +28,7 @@ Abra um terminal e no diretório principal do programa, digite:
 não deve ter nem muitas sombras nem muitas luzes, mostrando com clareza onde está a correia.
 - Ajuste o multiplicador (Opção 2), que define a regularidade da figura que vai aproximar a correia. Um bom valor tem estabilidade, isto é, não fica piscando, e tem poucas pontas.
 - Opção 3 para testar o programa e 4 para ver a saída
+
+## Tratamento de Erros
+- Aumentar o desempenho da camera: https://forums.raspberrypi.com/viewtopic.php?t=331441
+- Usar picamera2 https://forums.raspberrypi.com/viewtopic.php?t=351373
